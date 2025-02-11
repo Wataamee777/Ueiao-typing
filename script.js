@@ -73,26 +73,37 @@ const wordsList = [
     ["やりいか", "ヤリイカ", "槍烏賊"]
 ];
 
-let score = 0;
 let gameActive = false;
-let timerInterval;
+let score = 0;
 let timeLeft = 60;
-let mode = "kanji"; // 初期モードは漢字
+let timerInterval;
+let currentWordSet = [];
+let currentWord = "";
+let userInput = "";
+let mode = "kanji"; // 初期モードは "kanji" です
 
 document.getElementById("startButton").addEventListener("click", startGame);
 document.getElementById("modeSelect").addEventListener("change", updateMode);
+document.getElementById("instantFail").addEventListener("change", (e) => {
+    instantFail = e.target.checked;
+});
 
 function updateMode() {
     mode = document.getElementById("modeSelect").value;
 }
 
 function startGame() {
+    if (gameActive) return; // ゲームがすでに進行中なら何もしない
+
     gameActive = true;
     score = 0;
+    timeLeft = 60;
+
+    // スコア表示更新
     document.getElementById("score").textContent = score;
 
+    // 時間制限モードが選ばれている場合
     if (document.getElementById("timeSelect").value === "timed") {
-        timeLeft = 60;
         document.getElementById("timer").textContent = timeLeft;
         timerInterval = setInterval(() => {
             timeLeft--;
@@ -105,37 +116,62 @@ function startGame() {
         document.getElementById("timeLeft").textContent = "フリーモード";
     }
 
-    nextWord();
+    nextWord(); // 最初の単語を表示
 }
 
 function nextWord() {
-    const currentWordSet = wordsList[Math.floor(Math.random() * wordsList.length)];
-    const currentWord = currentWordSet[currentWordSet.length - 1]; // 漢字モードの単語を取得
+    currentWordSet = wordsList[Math.floor(Math.random() * wordsList.length)];
+    if (mode === "kanji") {
+        currentWord = currentWordSet[currentWordSet.length - 1]; // 最後の要素（漢字）
+    } else if (mode === "hiragana") {
+        currentWord = currentWordSet[0]; // ひらがな
+    } else {
+        currentWord = currentWordSet[1]; // カタカナ
+    }
+
+    userInput = "";
     document.getElementById("word").textContent = currentWord;
     document.getElementById("inputText").textContent = "";
 }
 
+document.addEventListener("keydown", (e) => {
+    if (!gameActive) return;
+
+    if (e.key === currentWord[userInput.length]) {
+        userInput += e.key;
+        document.getElementById("inputText").textContent = userInput;
+
+        if (userInput === currentWord) {
+            score++;
+            document.getElementById("score").textContent = score;
+            nextWord();
+        }
+    } else if (instantFail) {
+        endGame();
+    }
+});
+
 function endGame() {
     gameActive = false;
     clearInterval(timerInterval);
-    alert("ゲーム終了！スコア: " + score);
-    if (score > 1000) {
+
+    const resultText = `ゲーム終了！スコア: ${score}`;
+    alert(resultText);
+
+    // スコアを保存
+    let savedScores = JSON.parse(localStorage.getItem("typingScores")) || [];
+    savedScores.push({ score: score, date: new Date().toLocaleString() });
+    localStorage.setItem("typingScores", JSON.stringify(savedScores));
+
+    // 結果をコピー
+    navigator.clipboard.writeText(resultText).then(() => {
+        alert("結果がコピーされました！");
+    }).catch(err => {
+        console.error("コピーに失敗しました: ", err);
+    });
+
+    // 背景変更（スコアが1000を超えた場合）
+    if (score >= 1000) {
         document.body.style.backgroundImage = "url('sushi_sushi_syouyu.jpg')";
     }
 }
-
-document.addEventListener("input", function (e) {
-    if (!gameActive) return;
-
-    const inputText = document.getElementById("inputText").textContent;
-    const word = document.getElementById("word").textContent;
-
-    if (inputText === word) {
-        score += 10;
-        document.getElementById("score").textContent = score;
-        if (score > 1000) {
-            document.body.style.backgroundImage = "url('sushi_sushi_syouyu.jpg')";
-        }
-        nextWord();
-    }
-});
