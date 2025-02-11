@@ -150,5 +150,31 @@ document.addEventListener("keydown", (e) => {
 function endGame() {
     gameActive = false;
     clearInterval(timerInterval);
-    alert(`ゲーム終了！スコア: ${score}`);
+    
+    const resultText = `ゲーム終了！スコア: ${score}`;
+    alert(resultText);
+
+    // スコアを保存
+    let savedScores = JSON.parse(localStorage.getItem("typingScores")) || [];
+    savedScores.push({ score: score, date: new Date().toLocaleString() });
+    localStorage.setItem("typingScores", JSON.stringify(savedScores));
+
+    // 結果をコピー
+    navigator.clipboard.writeText(resultText).then(() => {
+        alert("結果がコピーされました！");
+    }).catch(err => {
+        console.error("コピーに失敗しました: ", err);
+    });
+}
+
+// 保存したスコアを表示する関数
+function showSavedScores() {
+    let savedScores = JSON.parse(localStorage.getItem("typingScores")) || [];
+    if (savedScores.length === 0) {
+        alert("保存されたスコアはありません。");
+        return;
+    }
+
+    let scoreText = savedScores.map(s => `スコア: ${s.score} (${s.date})`).join("\n");
+    alert("保存されたスコア:\n" + scoreText);
 }
