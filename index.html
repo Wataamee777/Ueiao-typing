@@ -3,16 +3,32 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>うえいあおタイピング</title>
+    <title>すしネタイピング</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <h1>タイピングゲーム</h1>
-    <p>「うえいあお」を順番に入力してください</p>
-    <p>一度でも間違えるとゲームオーバー</p>
-    <p>スコア: <span id="score">0</span></p>
-    <p>最高記録: <span id="highScore">0</span></p>
-    <input type="text" id="typingInput" autofocus>
+    <h1>すしネタイピング　モード</h1>
+    <div id="settings">
+        <label>モード選択:</label>
+        <select id="modeSelect">
+            <option value="kanji">漢字モード</option>
+            <option value="hiragana">ひらがなモード</option>
+        </select>
+        <label>プレイスタイル:</label>
+        <select id="timeSelect">
+            <option value="timed">制限時間モード（60秒）</option>
+            <option value="free">フリーモード</option>
+        </select>
+        <label>ミス即終了:</label>
+        <input type="checkbox" id="instantFail">
+    </div>
+    <button id="startButton">スタート</button>
+    <p id="timeLeft">残り時間: <span id="timer">60</span>秒</p>
+    <p id="scoreText">スコア: <span id="score">0</span></p>
+    <div id="wordContainer">
+        <p id="word"></p>
+        <p id="inputText"></p>
+    </div>
     <script src="script.js"></script>
 </body>
 </html>
